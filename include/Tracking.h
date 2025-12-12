@@ -36,6 +36,7 @@
 #include "System.h"
 #include "ImuTypes.h"
 #include "Settings.h"
+#include "PerfLogger.h"
 
 #include "GeometricCamera.h"
 

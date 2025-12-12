@@ -32,7 +32,7 @@
 #include "GeometricTools.h"
 
 #include <iostream>
-
+#include <numeric>
 #include <mutex>
 #include <chrono>
 #include <fstream>
