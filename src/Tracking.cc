@@ -3064,6 +3064,53 @@ bool Tracking::TrackLocalMap()
         return false;
 
     if((mnMatchesInliers>10)&&(mState==RECENTLY_LOST))
+    // ------------------- REPROJECTION ERROR LOGGING -------------------
+{
+    vector<float> errors;
+    errors.reserve(mCurrentFrame.N);
+
+    cv::Mat Tcw = mCurrentFrame.mTcw.clone();
+
+    for (int i = 0; i < mCurrentFrame.N; i++)
+    {
+        MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+        if(!pMP) continue;
+        if(mCurrentFrame.mvbOutlier[i]) continue;
+
+        cv::Mat Xw = pMP->GetWorldPos();
+
+        cv::Mat x3Dc = Tcw.rowRange(0,3).colRange(0,3) * Xw + Tcw.rowRange(0,3).col(3);
+        float xc = x3Dc.at<float>(0);
+        float yc = x3Dc.at<float>(1);
+        float zc = x3Dc.at<float>(2);
+        if(zc <= 0) continue;
+
+        float u =  mCurrentFrame.fx * xc/zc + mCurrentFrame.cx;
+        float v =  mCurrentFrame.fy * yc/zc + mCurrentFrame.cy;
+
+        float u_obs = mCurrentFrame.mvKeys[i].pt.x;
+        float v_obs = mCurrentFrame.mvKeys[i].pt.y;
+
+        float ex = u - u_obs;
+        float ey = v - v_obs;
+        errors.push_back(std::sqrt(ex*ex + ey*ey));
+    }
+
+    if(!errors.empty())
+    {
+        double sum = 0;
+        for(float e : errors) sum += e;
+        double mean = sum / errors.size();
+
+        double sq = 0;
+        for(float e : errors) sq += (e - mean)*(e - mean);
+        double stddev = std::sqrt(sq / errors.size());
+
+        PerfLogger::Instance().LogReprojectionError(mCurrentFrame.mnId, mean, stddev);
+    }
+}
+// -----------------------------------------------------------------
+
         return true;
 
 
@@ -3074,6 +3121,53 @@ bool Tracking::TrackLocalMap()
             return false;
         }
         else
+        // ------------------- REPROJECTION ERROR LOGGING -------------------
+{
+    vector<float> errors;
+    errors.reserve(mCurrentFrame.N);
+
+    cv::Mat Tcw = mCurrentFrame.mTcw.clone();
+
+    for (int i = 0; i < mCurrentFrame.N; i++)
+    {
+        MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+        if(!pMP) continue;
+        if(mCurrentFrame.mvbOutlier[i]) continue;
+
+        cv::Mat Xw = pMP->GetWorldPos();
+
+        cv::Mat x3Dc = Tcw.rowRange(0,3).colRange(0,3) * Xw + Tcw.rowRange(0,3).col(3);
+        float xc = x3Dc.at<float>(0);
+        float yc = x3Dc.at<float>(1);
+        float zc = x3Dc.at<float>(2);
+        if(zc <= 0) continue;
+
+        float u =  mCurrentFrame.fx * xc/zc + mCurrentFrame.cx;
+        float v =  mCurrentFrame.fy * yc/zc + mCurrentFrame.cy;
+
+        float u_obs = mCurrentFrame.mvKeys[i].pt.x;
+        float v_obs = mCurrentFrame.mvKeys[i].pt.y;
+
+        float ex = u - u_obs;
+        float ey = v - v_obs;
+        errors.push_back(std::sqrt(ex*ex + ey*ey));
+    }
+
+    if(!errors.empty())
+    {
+        double sum = 0;
+        for(float e : errors) sum += e;
+        double mean = sum / errors.size();
+
+        double sq = 0;
+        for(float e : errors) sq += (e - mean)*(e - mean);
+        double stddev = std::sqrt(sq / errors.size());
+
+        PerfLogger::Instance().LogReprojectionError(mCurrentFrame.mnId, mean, stddev);
+    }
+}
+// -----------------------------------------------------------------
+
             return true;
     }
     else if (mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)
@@ -3083,6 +3177,53 @@ bool Tracking::TrackLocalMap()
             return false;
         }
         else
+        // ------------------- REPROJECTION ERROR LOGGING -------------------
+{
+    vector<float> errors;
+    errors.reserve(mCurrentFrame.N);
+
+    cv::Mat Tcw = mCurrentFrame.mTcw.clone();
+
+    for (int i = 0; i < mCurrentFrame.N; i++)
+    {
+        MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+        if(!pMP) continue;
+        if(mCurrentFrame.mvbOutlier[i]) continue;
+
+        cv::Mat Xw = pMP->GetWorldPos();
+
+        cv::Mat x3Dc = Tcw.rowRange(0,3).colRange(0,3) * Xw + Tcw.rowRange(0,3).col(3);
+        float xc = x3Dc.at<float>(0);
+        float yc = x3Dc.at<float>(1);
+        float zc = x3Dc.at<float>(2);
+        if(zc <= 0) continue;
+
+        float u =  mCurrentFrame.fx * xc/zc + mCurrentFrame.cx;
+        float v =  mCurrentFrame.fy * yc/zc + mCurrentFrame.cy;
+
+        float u_obs = mCurrentFrame.mvKeys[i].pt.x;
+        float v_obs = mCurrentFrame.mvKeys[i].pt.y;
+
+        float ex = u - u_obs;
+        float ey = v - v_obs;
+        errors.push_back(std::sqrt(ex*ex + ey*ey));
+    }
+
+    if(!errors.empty())
+    {
+        double sum = 0;
+        for(float e : errors) sum += e;
+        double mean = sum / errors.size();
+
+        double sq = 0;
+        for(float e : errors) sq += (e - mean)*(e - mean);
+        double stddev = std::sqrt(sq / errors.size());
+
+        PerfLogger::Instance().LogReprojectionError(mCurrentFrame.mnId, mean, stddev);
+    }
+}
+// -----------------------------------------------------------------
+
             return true;
     }
     else
@@ -3090,6 +3231,53 @@ bool Tracking::TrackLocalMap()
         if(mnMatchesInliers<30)
             return false;
         else
+        // ------------------- REPROJECTION ERROR LOGGING -------------------
+{
+    vector<float> errors;
+    errors.reserve(mCurrentFrame.N);
+
+    cv::Mat Tcw = mCurrentFrame.mTcw.clone();
+
+    for (int i = 0; i < mCurrentFrame.N; i++)
+    {
+        MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+        if(!pMP) continue;
+        if(mCurrentFrame.mvbOutlier[i]) continue;
+
+        cv::Mat Xw = pMP->GetWorldPos();
+
+        cv::Mat x3Dc = Tcw.rowRange(0,3).colRange(0,3) * Xw + Tcw.rowRange(0,3).col(3);
+        float xc = x3Dc.at<float>(0);
+        float yc = x3Dc.at<float>(1);
+        float zc = x3Dc.at<float>(2);
+        if(zc <= 0) continue;
+
+        float u =  mCurrentFrame.fx * xc/zc + mCurrentFrame.cx;
+        float v =  mCurrentFrame.fy * yc/zc + mCurrentFrame.cy;
+
+        float u_obs = mCurrentFrame.mvKeys[i].pt.x;
+        float v_obs = mCurrentFrame.mvKeys[i].pt.y;
+
+        float ex = u - u_obs;
+        float ey = v - v_obs;
+        errors.push_back(std::sqrt(ex*ex + ey*ey));
+    }
+
+    if(!errors.empty())
+    {
+        double sum = 0;
+        for(float e : errors) sum += e;
+        double mean = sum / errors.size();
+
+        double sq = 0;
+        for(float e : errors) sq += (e - mean)*(e - mean);
+        double stddev = std::sqrt(sq / errors.size());
+
+        PerfLogger::Instance().LogReprojectionError(mCurrentFrame.mnId, mean, stddev);
+    }
+}
+// -----------------------------------------------------------------
+
             return true;
     }
 }
