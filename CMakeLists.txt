@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM3)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)
@@ -50,6 +52,7 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/Sophus
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
 )
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
@@ -82,6 +85,7 @@ src/GeometricTools.cc
 src/TwoViewReconstruction.cc
 src/Config.cc
 src/Settings.cc
+src/PerfLogger.cc
 include/System.h
 include/Tracking.h
 include/LocalMapping.h
@@ -111,7 +115,8 @@ include/GeometricTools.h
 include/TwoViewReconstruction.h
 include/SerializationUtils.h
 include/Config.h
-include/Settings.h)
+include/Settings.h
+include/PerfLogger.h)
 
 add_subdirectory(Thirdparty/g2o)
 

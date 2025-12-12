@@ -192,6 +192,12 @@ public:
     vector<double> vdTrackTotal_ms;
 #endif
 
+private:
+    // --- ADDED FOR KEYFRAME LOGGING ---
+    std::ofstream mKeyFrameFreqFile;
+    bool mbFirstKeyFrameLogged;
+    // ------------------------------------
+
 protected:
 
     // Main tracking function. It is independent of the input sensor.

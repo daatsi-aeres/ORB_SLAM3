@@ -23,6 +23,7 @@
 #include "Optimizer.h"
 #include "Converter.h"
 #include "GeometricTools.h"
+#include "PerfLogger.h"
 
 #include<mutex>
 #include<chrono>
@@ -345,6 +346,8 @@ void LocalMapping::EmptyQueue()
 
 void LocalMapping::MapPointCulling()
 {
+    // 1. Initialize counter
+    int nCulledCount = 0;
     // Check Recent Added MapPoints
     list<MapPoint*>::iterator lit = mlpRecentAddedMapPoints.begin();
     const unsigned long int nCurrentKFid = mpCurrentKeyFrame->mnId;
@@ -361,32 +364,52 @@ void LocalMapping::MapPointCulling()
     while(lit!=mlpRecentAddedMapPoints.end())
     {
         MapPoint* pMP = *lit;
+        // We use a flag to track if we deleted the point in this iteration
+        bool bCulled = false;
 
         if(pMP->isBad())
+        {
             lit = mlpRecentAddedMapPoints.erase(lit);
+            bCulled = true; // MARK AS CULLED
+        }
+           
         else if(pMP->GetFoundRatio()<0.25f)
         {
             pMP->SetBadFlag();
             lit = mlpRecentAddedMapPoints.erase(lit);
+            bCulled = true; // MARK AS CULLED
         }
         else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=2 && pMP->Observations()<=cnThObs)
         {
             pMP->SetBadFlag();
             lit = mlpRecentAddedMapPoints.erase(lit);
+            bCulled = true; // MARK AS CULLED
         }
         else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=3)
+        {
             lit = mlpRecentAddedMapPoints.erase(lit);
+            bCulled = true; // MARK AS CULLED
+        }
+            
         else
         {
             lit++;
             borrar--;
         }
+        // 2. Increment the counter if we culled
+        if(bCulled)
+        {
+            nCulledCount++;
+        }
     }
+    // 3. Log the final total for this KeyFrame
+    PerfLogger::Instance().LogCullingTotal(nCurrentKFid, nCulledCount);
 }
 
 
 void LocalMapping::CreateNewMapPoints()
 {
+    int nCreatedCount = 0;
     // Retrieve neighbor keyframes in covisibility graph
     int nn = 10;
     // For stereo inertial case
@@ -707,8 +730,14 @@ void LocalMapping::CreateNewMapPoints()
 
             mpAtlas->AddMapPoint(pMP);
             mlpRecentAddedMapPoints.push_back(pMP);
+
+            nCreatedCount++;
         }
-    }    
+    } 
+    
+    // 3. Log ONCE per KeyFrame
+    // Format: KF_ID, Created_Count
+    PerfLogger::Instance().LogCreationTotal(mpCurrentKeyFrame->mnId, nCreatedCount);
 }
 
 void LocalMapping::SearchInNeighbors()

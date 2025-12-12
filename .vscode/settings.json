@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "atomic": "cpp",
+        "condition_variable": "cpp",
+        "tuple": "cpp",
+        "valarray": "cpp",
+        "chrono": "cpp"
+    }
+}

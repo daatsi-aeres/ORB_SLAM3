@@ -18,7 +18,9 @@
 
 
 #include "Tracking.h"
-
+#include "PerfLogger.h"
+#include <vector>
+#include <cmath>
 #include "ORBmatcher.h"
 #include "FrameDrawer.h"
 #include "Converter.h"
@@ -33,6 +35,7 @@
 
 #include <mutex>
 #include <chrono>
+#include <fstream>
 
 
 using namespace std;
@@ -128,6 +131,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     vdNewKF_ms.clear();
     vdTrackTotal_ms.clear();
 #endif
+
 }
 
 #ifdef REGISTER_TIMES
@@ -1866,6 +1870,11 @@ void Tracking::Track()
 
     mLastProcessedState=mState;
 
+    // --- ADDED: Log Tracking State ---
+    std::cout << "[VERIFY] Logging Tracking State: " << mCurrentFrame.mnId << ", State: " << mState << std::endl;
+    PerfLogger::Instance().LogTrackingState(mCurrentFrame.mnId, mState);
+    // ---------------------------------
+
     if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && !mbCreatedMap)
     {
 #ifdef REGISTER_TIMES
@@ -1912,6 +1921,10 @@ void Tracking::Track()
         if(mState!=OK) // If rightly initialized, mState=OK
         {
             mLastFrame = Frame(mCurrentFrame);
+            // --- ADDED: Log Tracking State (Initial failed state) ---
+            std::cout << "[VERIFY] Logging Tracking State: " << mCurrentFrame.mnId << ", State: " << mState << std::endl;
+            PerfLogger::Instance().LogTrackingState(mCurrentFrame.mnId, mState);
+            // ---------------------------------
             return;
         }
 
@@ -2292,6 +2305,16 @@ void Tracking::Track()
             mCurrentFrame.mpReferenceKF = mpReferenceKF;
 
         mLastFrame = Frame(mCurrentFrame);
+        // --- ADDED: Log Keypoints ---
+    int nTracked = 0;
+    for(int i = 0; i < mCurrentFrame.N; i++)
+    {
+        if(mCurrentFrame.mvpMapPoints[i] && !mCurrentFrame.mvbOutlier[i])
+            nTracked++;
+    }
+    std::cout << "[VERIFY] Logging Keypoints: Frame: " << mCurrentFrame.mnId << ", Total: " << mCurrentFrame.N << ", Tracked: " << nTracked << std::endl;
+    PerfLogger::Instance().LogKeypoints(mCurrentFrame.mnId, mCurrentFrame.N, nTracked);
+    // ----------------------------
     }
 
 
@@ -2330,7 +2353,6 @@ void Tracking::Track()
     }
 #endif
 }
-
 
 void Tracking::StereoInitialization()
 {
@@ -2371,6 +2393,10 @@ void Tracking::StereoInitialization()
 
         // Create KeyFrame
         KeyFrame* pKFini = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
+        // --- ADDED FOR KEYFRAME LOGGING ---
+        // --> REPLACE WITH THE NEW LOGIC:
+    PerfLogger::Instance().LogKeyFrame(pKFini->mnId, pKFini->mnFrameId, pKFini->mTimeStamp);
+    // <-----------------------------
 
         // Insert KeyFrame in the map
         mpAtlas->AddKeyFrame(pKFini);
@@ -2528,6 +2554,13 @@ void Tracking::CreateInitialMapMonocular()
     // Create KeyFrames
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
+
+    // --- ADDED FOR KEYFRAME LOGGING ---
+// --> REPLACE WITH THE NEW LOGIC:
+    PerfLogger::Instance().LogKeyFrame(pKFini->mnId, pKFini->mnFrameId, pKFini->mTimeStamp);
+    PerfLogger::Instance().LogKeyFrame(pKFcur->mnId, pKFcur->mnFrameId, pKFcur->mTimeStamp);
+    // <-----------------------------
+    // ------------------------------------
 
     if(mSensor == System::IMU_MONOCULAR)
         pKFini->mpImuPreintegrated = (IMU::Preintegrated*)(NULL);
@@ -3222,6 +3255,9 @@ void Tracking::CreateNewKeyFrame()
         return;
 
     KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
+    // --- ADDED FOR KEYFRAME LOGGING ---
+    // NEW PerfLogger CALL:
+    PerfLogger::Instance().LogKeyFrame(pKF->mnId, pKF->mnFrameId, pKF->mTimeStamp);
 
     if(mpAtlas->isImuInitialized()) //  || mpLocalMapper->IsInitializing())
         pKF->bImu = true;
