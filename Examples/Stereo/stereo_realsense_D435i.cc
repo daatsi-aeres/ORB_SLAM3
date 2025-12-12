@@ -456,18 +456,5 @@ int main(int argc, char **argv) {
     // 1. Stop SLAM threads
     SLAM.Shutdown(); 
 
-    // 2. Save Trajectory (Must happen BEFORE closing logger/running python script)
-    if(using_DIP) {
-        cout << "Saving DIP trajectory to dip/trajectory_dip.txt..." << endl;
-        SLAM.SaveTrajectoryTUM("dip/trajectory_dip.txt");
-    } else {
-        cout << "Saving Baseline trajectory to baseline/trajectory_baseline.txt..." << endl;
-        SLAM.SaveTrajectoryTUM("baseline/trajectory_baseline.txt");
-    }
-    
-    // 3. Close Logger & Run RPE Script (Now safe because file exists)
-    cout << "Running RPE script..." << endl;
-    PerfLogger::Instance().Close();
-
     return 0;
 }

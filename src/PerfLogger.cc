@@ -51,31 +51,31 @@ void PerfLogger::OpenFiles() {
 
     string path;
 
-    path = folder + "/tracking_state_" + folder + ".csv";
+    path = folder + "/tracking_state" +".csv";
     f_tracking_state.open(path, ios::out | ios::trunc);
     if (f_tracking_state.is_open()) f_tracking_state << "frame_id,state\n";
     else cerr << "PerfLogger: failed open " << path << endl;
 
-    path = folder + "/keypoints_" + folder + ".csv";
+    path = folder + "/keypoints" + ".csv";
     f_keypoints.open(path, ios::out | ios::trunc);
     if (f_keypoints.is_open()) f_keypoints << "frame_id,keypoints,tracked\n";
     else cerr << "PerfLogger: failed open " << path << endl;
 
     // Inliers removed as requested
 
-    path = folder + "/reprojection_error_" + folder + ".csv";
+    path = folder + "/reprojection_error" + ".csv";
     f_reprojection.open(path, ios::out | ios::trunc);
     if (f_reprojection.is_open()) f_reprojection << "frame_id,reproj_mean,reproj_std\n";
     else cerr << "PerfLogger: failed open " << path << endl;
 
     // --- ADDED FOR KEYFRAME FREQUENCY ---
-    path = folder + "/keyframe_frequency_" + folder + ".csv";
+    path = folder + "/keyframe_frequency" + ".csv";
     f_keyframe_freq.open(path, ios::out | ios::trunc);
     if (f_keyframe_freq.is_open()) f_keyframe_freq << "kf_id,frame_id,timestamp\n";
     else cerr << "PerfLogger: failed open " << path << endl;
     // ------------------------------------
 
-    path = folder + "/map_culling_" + folder + ".csv";
+    path = folder + "/map_culling" + ".csv";
     f_map_culling.open(path, ios::out | ios::trunc);
     if (f_map_culling.is_open()) f_map_culling << "kf_id,created,culled,cull_ratio,mean_obs\n";
     else cerr << "PerfLogger: failed open " << path << endl;
